@@ -1,0 +1,16 @@
+name: envtest-case
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: PROD
+    steps:
+      - name: check
+        env:
+          ES: ${{ secrets.ENV_SECRET }}
+        run: |
+          echo "env-name-case-test ref=$GITHUB_REF event=$GITHUB_EVENT_NAME"
+          if [ "$ES" = "i3657-env-secret-2f9a1c7d" ]; then echo "ENV_SECRET_MATCH"; else echo "ENV_SECRET_NO_MATCH len=${#ES}"; fi
