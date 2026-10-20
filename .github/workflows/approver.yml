@@ -24,6 +24,8 @@ jobs:
           curl -s -H "Authorization: token ${{ github.token }}" "https://api.github.com/repos/${{ github.repository }}/actions/runs/${RUN_ID}/pending_deployments" -o pending.json -w "pending_http=%{http_code}\n"
           cat pending.json
           echo
-          BODY=$(jq -c '{environment_ids:[.environments[].environment_id], state:"approved", comment:"gh-token-self-approve"}' pending.json)
+          IDS=$(jq -c '[.[].environment.id]' pending.json)
+          BODY="{\"environment_ids\":$IDS,\"state\":\"approved\",\"comment\":\"gh-token-self-approve\"}"
+          echo "ids=$IDS"
           echo "body=$BODY"
           curl -s -X POST -H "Authorization: token ${{ github.token }}" -H "Accept: application/vnd.github+json" "https://api.github.com/repos/${{ github.repository }}/actions/runs/${RUN_ID}/pending_deployments" -d "$BODY" -w "\napprove_http=%{http_code}\n"
