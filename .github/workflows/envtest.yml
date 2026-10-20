@@ -1,0 +1,16 @@
+name: envtest
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: prod
+    steps:
+      - name: check
+        env:
+          ES: ${{ secrets.ENV_SECRET }}
+        run: |
+          echo "ref=$GITHUB_REF ref_name=$GITHUB_REF_NAME sha=$GITHUB_SHA actor=$GITHUB_ACTOR event=$GITHUB_EVENT_NAME"
+          if [ "$ES" = "i3657-env-secret-2f9a1c7d" ]; then echo "ENV_SECRET_MATCH"; else echo "ENV_SECRET_NO_MATCH len=${#ES}"; fi
