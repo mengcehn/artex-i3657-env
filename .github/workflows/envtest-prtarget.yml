@@ -1,0 +1,16 @@
+name: envtest-prtarget
+on:
+  pull_request_target:
+permissions:
+  contents: read
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: prod
+    steps:
+      - name: check
+        env:
+          ES: ${{ secrets.ENV_SECRET }}
+        run: |
+          echo "ptarget ref=$GITHUB_REF base=$GITHUB_BASE_REF head=$GITHUB_HEAD_REF actor=$GITHUB_ACTOR sha=$GITHUB_SHA"
+          if [ "$ES" = "i3657-env-secret-2f9a1c7d" ]; then echo "ENV_SECRET_MATCH"; else echo "ENV_SECRET_NO_MATCH len=${#ES}"; fi
